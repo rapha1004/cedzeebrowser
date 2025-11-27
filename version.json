@@ -1,9 +1,10 @@
 [
     {
-        "version": "1.8",
-        "date": "08/08/2025",
+        "version": "1.9",
+        "date": "27/11/2025",
         "changes": [
-            "Extension system introduced with a sample extension."
+            "Explain why history loading error happens",
+            "Fixed Update Checker not working"
         ]
     }
 ]

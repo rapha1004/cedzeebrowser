@@ -10,7 +10,7 @@ from src.ConsoleLogger import logger
 from functools import wraps
 from urllib.parse import quote
 
-from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal, QUrl
 from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage
 
 try:
@@ -27,40 +27,19 @@ directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_FILE = f"{directory}/resources/config.json"
 
 
-def path_to_uri(path):
-    """
-    Convert a local file path to a file:// URI.
-    """
-    path = os.path.abspath(path)
-    system = platform.system()
-
-    if system == "Windows":
-        path = path.replace("\\", "/")
-        if not path.startswith("/"):
-            path = "/" + path
-        uri = "file://" + path
-    elif system in ("Linux", "Darwin"):
-        uri = "file://" + path
-    else:
-        uri = "file://" + path
-    uri = quote(uri, safe=":/")
-    return uri
-
-
 def require_local_url(method):
-    """
-    Decorator: Only allow method if current page is local.
-    """
-
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         if not self.web_page:
-            logger.warning("Web page not defined.")
             return None
+
         url = self.web_page.url().toString()
-        if not url.startswith(path_to_uri(directory)):
-            return None
-        return method(self, *args, **kwargs)
+        local_root = QUrl.fromLocalFile(directory).toString()
+
+        if url.startswith("cedzee://") or url.startswith(local_root):
+            return method(self, *args, **kwargs)
+
+        return None
 
     return wrapper
 
